@@ -87,7 +87,7 @@ public class PHash {
 
         //Write the grey image
 
-        grey_image = new File("TestImages/GreyImage.jpeg");
+        grey_image = new File("pHash/TestImages/GreyImage.jpeg");
         try {
             ImageIO.write(image,"jpg",grey_image);
         } catch (IOException e) {
@@ -130,11 +130,11 @@ public class PHash {
     }
 
      //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public void DCT (int[][] image) throws  IOException{
+    public void DCT (int[][] image , int dim) throws  IOException{
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
     File DCT_image = null;
-    int [][] DST = null;
+    int [][] DST = new int[dim][dim];
         int i, j, u, v;
         double constU, constV, Cu, Cv, Cuv, tmp;
         double constOp = PI/16.0;
