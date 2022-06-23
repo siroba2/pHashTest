@@ -4,15 +4,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.cos;
-
 public class PHash {
 
     //Define attributes of the class
     private BufferedImage image = null;
     private String image_path = " ";
     private int hash_size = 8;
+    private int size = 32;
     private int highfreq_factor = 4;
 
     int [][] zigzag = {
@@ -64,7 +62,7 @@ public class PHash {
 
 
     // Change the RGB components of the image to a gray scale
-    public File changeColor (BufferedImage image) throws  IOException{
+    public BufferedImage changeColor (BufferedImage image) throws  IOException{
         File grey_image = null;
         for(int j=0 ; j< image.getHeight(); j++){
             for (int i = 0; i< image.getWidth() ; i++){
@@ -87,13 +85,14 @@ public class PHash {
 
         //Write the grey image
 
-        grey_image = new File("pHash/TestImages/GreyImage.jpeg");
+        grey_image = new File("pHash/TestImages/GreyImage.jpg");
         try {
             ImageIO.write(image,"jpg",grey_image);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return grey_image;
+        BufferedImage newImage = ImageIO.read(grey_image);
+        return newImage;
 
     }
 
@@ -111,31 +110,56 @@ public class PHash {
         return result;
     }
 
-    private static BufferedImage covertToImageUsingSetRGB(int [][] imageMatrix) throws  IOException{
-        BufferedImage image = null;
-        for(int i=0; i<imageMatrix.length; i++) {
-            for(int j=0; j<imageMatrix.length; j++) {
-                int a = imageMatrix[i][j];
-                Color newColor = new Color(a,a,a);
-                image.setRGB(j,i,newColor.getRGB());
+    private static BufferedImage covertToImageUsingSetRGB(double[][] imageMatrix) throws  IOException{
+        BufferedImage image = new BufferedImage( imageMatrix.length, imageMatrix[0].length, BufferedImage.TYPE_INT_ARGB);
+        for(int x = 0; x < imageMatrix.length; x++){
+            for (int y = 0; y < imageMatrix[x].length; y++) {
+                image.setRGB(x, y, (int) Math.round(imageMatrix[x][y]));
             }
-        }
-        File output = new File("GrayScale.jpg");
+        };
+        File output = new File("pHash/TestImages/DCT.jpg");
         try {
             ImageIO.write(image, "jpg", output);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         return image;
     }
 
+
+    // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
+
      //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public void DCT (int[][] image , int dim) throws  IOException{
+    public String DCT (int[][] image , int dim) throws  IOException{
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
-    File DCT_image = null;
-    int [][] DST = new int[dim][dim];
-        int i, j, u, v;
+    File DCT_image ;
+    double [][] DST = new double[dim][dim];
+    int N = size ;
+    double [] c = new double[size];
+        for (int i = 1; i < size; i++) {
+            c[i] = 1;
+        }
+        c[0] = 1 / Math.sqrt(2.0);
+        for (int u = 0; u < N; u++) {
+            for (int v = 0; v < N; v++) {
+                double sum = 0.0;
+                for (int i = 0; i < N; i++) {
+                    for (int j = 0; j < N; j++) {
+
+                        sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (image[i][j]);
+
+
+                    }
+
+                }
+                sum *= (c[u] * c[v]) / 4.0;
+                DST[u][v] = sum;
+                System.out.print(sum);
+
+            }
+        }
+       /* int i, j, u, v;
         double constU, constV, Cu, Cv, Cuv, tmp;
         double constOp = PI/16.0;
         double opt1= 0.5 /Math.sqrt(2);
@@ -157,26 +181,66 @@ public class PHash {
                     }
 
                     DST[u ][v] = (int) tmp;
+
                 }
             }
-        }
+        }*/
+
+
 
         //Write the dct image
 
 
-        DCT_image = new File("TestImages/DCTImage.jpeg");
+        DCT_image = new File("pHash/TestImages/DTC.jpg");
         try {
-            ImageIO.write(covertToImageUsingSetRGB(image),"jpg",DCT_image);
+            ImageIO.write(covertToImageUsingSetRGB(DST),"jpg",DCT_image);
+            System.out.println("test DCT");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        //Reduce the DCT and compute the average value
+        double total = 0.0;
 
-        
+        for(int x = 0; x < hash_size; x++){
+            for(int y = 0 ; y< hash_size ; y++){
+                total += DST[x][y];
+            }
+        }
 
+        total -= DST[0][0];
 
+        double avg = total / (double) (hash_size * hash_size - 1);
+
+        // Further reduce the DCT.
+
+        StringBuilder hash = new StringBuilder();
+
+        for (int x = 0; x < hash_size; x++) {
+            for (int y = 0; y < hash_size; y++) {
+                if (x != 0 && y != 0) {
+                    hash.append(DST[x][y] > avg ? "1" : "0");
+                }
+            }
+        }
+        System.out.println(hash.toString());
+
+        return hash.toString();
 
     }
+    //Hamming distance
+    public int hammingDist(String str1, String str2)
+    {
+        int i = 0, count = 0;
+        while(i < str1.length())
+        {
+            if (str1.charAt(i) != str2.charAt(i))
+                count++;
+            i++;
+        }
+        return count;
+    }
+
 
     //delete(put to 0) the last n values of each block (8 x8 )
      public void FPB(double[] im, int n, int DimX, int DimY)
@@ -202,7 +266,7 @@ public class PHash {
     }
 
 
-    //Construct the hash
+
 
 
 
