@@ -1,8 +1,12 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+
+import static java.lang.Math.cos;
 
 public class PHash {
 
@@ -117,7 +121,7 @@ public class PHash {
                 image.setRGB(x, y, (int) Math.round(imageMatrix[x][y]));
             }
         };
-        File output = new File("pHash/TestImages/DCT.jpg");
+        File output = new File("pHash/TestImages/DCT_2.jpg");
         try {
             ImageIO.write(image, "jpg", output);
         } catch (IOException e) {
@@ -125,6 +129,41 @@ public class PHash {
         }
         return image;
     }
+
+    public static void writeImage(double[][] image, int width, int height, String filename){
+        // flatten the 2d array
+        double[] result = Arrays.stream(image)
+                .flatMapToDouble(Arrays::stream)
+                .toArray();
+
+        BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster raster = outputImage.getRaster();
+        raster.setSamples(0, 0, width, height, 0, result);
+
+        try {
+            ImageIO.write(outputImage, "jpg", new File(filename));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeImage(int[][] image, int width, int height, String filename){
+        // flatten the 2d array
+        int[] result = Arrays.stream(image)
+                .flatMapToInt(Arrays::stream)
+                .toArray();
+
+        BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster raster = outputImage.getRaster();
+        raster.setSamples(0, 0, width, height, 0, result);
+
+        try {
+            ImageIO.write(outputImage, "jpg", new File(filename));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
@@ -159,9 +198,11 @@ public class PHash {
 
             }
         }
-       /* int i, j, u, v;
+
+        /*
+        int i, j, u, v;
         double constU, constV, Cu, Cv, Cuv, tmp;
-        double constOp = PI/16.0;
+        double constOp = Math.PI/16.0;
         double opt1= 0.5 /Math.sqrt(2);
         double opt2 = 0.5;
 
@@ -177,10 +218,11 @@ public class PHash {
 
                 for (i = 0; i < 8; i++) {
                     for (j = 0; j < 8; j++) {
-                        tmp += Cuv * image[i ][j] * cos((2 * i + 1) * constU) * cos((2 * j + 1) * constV);
+                        tmp += Cuv * image[i ][j] * Math.cos((2 * i + 1) * constU) * Math.cos((2 * j + 1) * constV);
                     }
 
                     DST[u ][v] = (int) tmp;
+                    System.out.print(tmp);
 
                 }
             }
@@ -189,15 +231,16 @@ public class PHash {
 
 
         //Write the dct image
+//        File DCT_image2 = new File("pHash/TestImages/DTC .jpg");
+//        try {
+//            ImageIO.write(covertToImageUsingSetRGB(DST),"jpg",DCT_image2);
+//
+//            System.out.println("test DCT");
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
-
-        DCT_image = new File("pHash/TestImages/DTC.jpg");
-        try {
-            ImageIO.write(covertToImageUsingSetRGB(DST),"jpg",DCT_image);
-            System.out.println("test DCT");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writeImage(DST, hash_size, hash_size, "pHash/TestImages/DTC_M.jpg");
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
