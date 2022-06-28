@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import static java.lang.Math.cos;
@@ -12,7 +14,8 @@ public class PHash {
 
     //Define attributes of the class
     private BufferedImage image = null;
-    private String image_path = " ";
+    //private String image_path = " ";
+    private Path image_path ;
     private int hash_size = 8;
     private int size = 32;
     private int highfreq_factor = 4;
@@ -37,12 +40,12 @@ public class PHash {
 
 
     //Constructor
-    public PHash(String image_path , int hash_size, int highfreq_factor) throws IOException {
+    public PHash(Path image_path , int hash_size, int highfreq_factor) throws IOException {
         this.image_path= image_path;
         this.hash_size= hash_size;
         this.highfreq_factor = highfreq_factor;
         try {
-            this.image = ImageIO.read(new File(image_path));
+            this.image = ImageIO.read(new File(String.valueOf(image_path)));
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -50,6 +53,7 @@ public class PHash {
 
     //
     public BufferedImage getImage(){
+
         return this.image;
     }
 
@@ -61,7 +65,56 @@ public class PHash {
         Graphics2D graphics2D = resizedImage.createGraphics();
         graphics2D.drawImage(image, 0, 0, witdh, height, null);
         graphics2D.dispose();
+
+        File reduceImage = new File("pHash/TestImages/ReduceImage.jpg");
+        try {
+            ImageIO.write(resizedImage,"jpg",reduceImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return resizedImage;
+    }
+
+    public void resize(InputStream input, Path target,
+                               int width, int height) throws IOException {
+
+        BufferedImage originalImage = ImageIO.read(input);
+
+        /**
+         * SCALE_AREA_AVERAGING
+         * SCALE_DEFAULT
+         * SCALE_FAST
+         * SCALE_REPLICATE
+         * SCALE_SMOOTH
+         */
+        Image newResizedImage = originalImage
+                .getScaledInstance(width, height, Image.SCALE_SMOOTH);
+
+        String s = target.getFileName().toString();
+        String fileExtension = s.substring(s.lastIndexOf(".") + 1);
+
+        // we want image in png format
+        ImageIO.write(convertToBufferedImage(newResizedImage),
+                fileExtension, target.toFile());
+
+    }
+
+    public static BufferedImage convertToBufferedImage(Image img) {
+
+        if (img instanceof BufferedImage) {
+            return (BufferedImage) img;
+        }
+
+        // Create a buffered image with transparency
+        BufferedImage bi = new BufferedImage(
+                img.getWidth(null), img.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D graphics2D = bi.createGraphics();
+        graphics2D.drawImage(img, 0, 0, null);
+        graphics2D.dispose();
+
+        return bi;
     }
 
 
@@ -88,8 +141,7 @@ public class PHash {
         }
 
         //Write the grey image
-
-        grey_image = new File("pHash/TestImages/GreyImage.jpg");
+        grey_image = new File(image_path.subpath(0, 2) + "GreyImage"  +image_path.getName(2));
         try {
             ImageIO.write(image,"jpg",grey_image);
         } catch (IOException e) {
@@ -137,6 +189,8 @@ public class PHash {
                 .toArray();
 
         BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        //BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
         WritableRaster raster = outputImage.getRaster();
         raster.setSamples(0, 0, width, height, 0, result);
 
@@ -194,12 +248,12 @@ public class PHash {
                 }
                 sum *= (c[u] * c[v]) / 4.0;
                 DST[u][v] = sum;
-                System.out.print(sum);
+                System.out.println(sum);
 
             }
         }
 
-        /*
+/*
         int i, j, u, v;
         double constU, constV, Cu, Cv, Cuv, tmp;
         double constOp = Math.PI/16.0;
@@ -222,7 +276,7 @@ public class PHash {
                     }
 
                     DST[u ][v] = (int) tmp;
-                    System.out.print(tmp);
+                    System.out.println(tmp);
 
                 }
             }
@@ -240,7 +294,7 @@ public class PHash {
 //            throw new RuntimeException(e);
 //        }
 
-        writeImage(DST, hash_size, hash_size, "pHash/TestImages/DTC_M.jpg");
+        writeImage(DST, hash_size, hash_size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
@@ -252,6 +306,7 @@ public class PHash {
         }
 
         total -= DST[0][0];
+        //System.out.println("total  " + total);
 
         double avg = total / (double) (hash_size * hash_size - 1);
 
@@ -266,9 +321,11 @@ public class PHash {
                 }
             }
         }
-        System.out.println(hash.toString());
 
-        return hash.toString();
+        String phash = hash.toString();
+        System.out.println(phash);
+
+        return phash;
 
     }
     //Hamming distance
@@ -307,22 +364,6 @@ public class PHash {
                 for (k = 0; k < n; k++)
                     im[(i + zigzag[k][0]) * DimY + (j + zigzag[k][1])] = 0;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
