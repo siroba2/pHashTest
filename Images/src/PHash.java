@@ -20,23 +20,6 @@ public class PHash {
     private int size = 32;
     private int highfreq_factor = 4;
 
-    int [][] zigzag = {
-        {0, 0},
-        {0, 1}, {1, 0},
-        {2, 0}, {1, 1}, {0, 2},
-        {0, 3}, {1, 2}, {2, 1}, {3, 0},
-        {4, 0}, {3, 1}, {2, 2}, {1, 3}, {0, 4},
-        {0, 5}, {1, 4}, {2, 3}, {3, 2}, {4, 1}, {5, 0},
-        {6, 0}, {5, 1}, {4, 2}, {3, 3}, {2, 4}, {1, 5}, {0, 6},
-        {0, 7}, {1, 6}, {2, 5}, {3, 4}, {4, 3}, {5, 2}, {6, 1}, {7, 0},
-        {7, 1}, {6, 2}, {5, 3}, {4, 4}, {3, 5}, {2, 6}, {1, 7},
-        {2, 7}, {3, 6}, {4, 5}, {5, 4}, {6, 3}, {7, 2},
-        {7, 3}, {6, 4}, {5, 5}, {4, 6}, {3, 7},
-        {4, 7}, {5, 6}, {6, 5}, {7, 4},
-        {7, 5}, {6, 6}, {5, 7},
-        {6, 7}, {7, 6},
-        {7, 7}
-    };
 
 
     //Constructor
@@ -74,30 +57,7 @@ public class PHash {
         }
         return resizedImage;
     }
-
-    public void resize(InputStream input, Path target,
-                               int width, int height) throws IOException {
-
-        BufferedImage originalImage = ImageIO.read(input);
-
-        /**
-         * SCALE_AREA_AVERAGING
-         * SCALE_DEFAULT
-         * SCALE_FAST
-         * SCALE_REPLICATE
-         * SCALE_SMOOTH
-         */
-        Image newResizedImage = originalImage
-                .getScaledInstance(width, height, Image.SCALE_SMOOTH);
-
-        String s = target.getFileName().toString();
-        String fileExtension = s.substring(s.lastIndexOf(".") + 1);
-
-        // we want image in png format
-        ImageIO.write(convertToBufferedImage(newResizedImage),
-                fileExtension, target.toFile());
-
-    }
+    
 
     public static BufferedImage convertToBufferedImage(Image img) {
 
@@ -173,7 +133,7 @@ public class PHash {
                 image.setRGB(x, y, (int) Math.round(imageMatrix[x][y]));
             }
         };
-        File output = new File("pHash/TestImages/DCT_2.jpg");
+        File output = new File("Image/TestImages/DCT_2.jpg");
         try {
             ImageIO.write(image, "jpg", output);
         } catch (IOException e) {
@@ -283,17 +243,6 @@ public class PHash {
         }*/
 
 
-
-        //Write the dct image
-//        File DCT_image2 = new File("pHash/TestImages/DTC .jpg");
-//        try {
-//            ImageIO.write(covertToImageUsingSetRGB(DST),"jpg",DCT_image2);
-//
-//            System.out.println("test DCT");
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
         writeImage(DST, hash_size, hash_size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
 
         //Reduce the DCT and compute the average value
@@ -342,28 +291,7 @@ public class PHash {
     }
 
 
-    //delete(put to 0) the last n values of each block (8 x8 )
-     public void FPB(double[] im, int n, int DimX, int DimY)
-    {
-        int i, j, k;
 
-        for (i = 0; i < DimX; i += 8)
-            for (j = 0; j < DimY; j += 8)
-                for (k = 0; k < n; k++)
-                    im[(i + zigzag[63 - k][1]) * DimY + (j + zigzag[63 - k][0])] = 0;
-    }
-
-    //delete(put to 0) the first n values of each block (8 x8 )
-    public void FPA(double[] im,  int n, int DimX,  int DimY)
-    {
-        int i, j, k;
-
-
-        for (i = 0; i < DimX; i += 8)
-            for (j = 0; j < DimY; j += 8)
-                for (k = 0; k < n; k++)
-                    im[(i + zigzag[k][0]) * DimY + (j + zigzag[k][1])] = 0;
-    }
 
 
 }
