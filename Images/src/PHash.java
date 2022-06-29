@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -16,15 +16,16 @@ public class PHash {
     private BufferedImage image = null;
     //private String image_path = " ";
     private Path image_path ;
-    private int hash_size = 32;
-    private int size =32;
+    private int size = 32;
+    private int hash_size= 8;
+
 
 
 
     //Constructor
-    public PHash(Path image_path , int hash_size) throws IOException {
+    public PHash(Path image_path , int size) throws IOException {
         this.image_path= image_path;
-        this.hash_size= hash_size;
+        this.size= size;
 
         try {
             this.image = ImageIO.read(new File(String.valueOf(image_path)));
@@ -39,20 +40,6 @@ public class PHash {
         return this.image;
     }
 
-    //Reduce size of the image --> method from https://www.baeldung.com/java-resize-image
-
-    public BufferedImage reduceSize (BufferedImage image , int witdh , int height){
-
-        BufferedImage resizedImage = new BufferedImage(witdh,height,BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics2D = resizedImage.createGraphics();
-        graphics2D.drawImage(image, 0, 0, witdh, height, null);
-        graphics2D.dispose();
-        File output = new File(image_path.subpath(0, 2) + "reduceSize"  +image_path.getName(2));
-
-
-        return resizedImage;
-
-    }
 
     public BufferedImage resize (BufferedImage image , int width , int height){
         BufferedImage tThumbImage = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
@@ -142,15 +129,6 @@ public class PHash {
         return result;
     }
 
-    private static BufferedImage covertToImageUsingSetRGB(double[][] imageMatrix) throws  IOException{
-        BufferedImage image = new BufferedImage( imageMatrix.length, imageMatrix[0].length, BufferedImage.TYPE_INT_ARGB);
-        for(int x = 0; x < imageMatrix.length; x++){
-            for (int y = 0; y < imageMatrix[x].length; y++) {
-                image.setRGB(x, y, (int) Math.round(imageMatrix[x][y]));
-            }
-        }
-        return image;
-    }
 
     public static void writeImage(double[][] image, int width, int height, String filename){
         // flatten the 2d array
@@ -210,13 +188,14 @@ public class PHash {
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
 
-                        sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (image[i][j]);
+                       sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (image[i][j]);
 
 
                     }
 
                 }
-                sum *= (c[u] * c[v]) / 4.0;
+                //sum *= (c[u] * c[v]) / 4.0; This only works for 8x8 bloc of data
+                sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
                 DST[u][v] = sum;
                 //System.out.println(sum);
 
@@ -253,7 +232,7 @@ public class PHash {
         }*/
 
 
-        writeImage(DST, hash_size, hash_size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
+        writeImage(DST, size, size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
@@ -267,7 +246,7 @@ public class PHash {
         total -= DST[0][0];
         //System.out.println("total  " + total);
 
-        double avg = total / (double) (hash_size * hash_size - 1);
+        double avg = total / (double) (hash_size* hash_size - 1);
 
         // Further reduce the DCT.
 
