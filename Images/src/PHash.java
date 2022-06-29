@@ -16,17 +16,16 @@ public class PHash {
     private BufferedImage image = null;
     //private String image_path = " ";
     private Path image_path ;
-    private int hash_size = 8;
-    private int size = 32;
-    private int highfreq_factor = 4;
+    private int hash_size = 32;
+    private int size =32;
 
 
 
     //Constructor
-    public PHash(Path image_path , int hash_size, int highfreq_factor) throws IOException {
+    public PHash(Path image_path , int hash_size) throws IOException {
         this.image_path= image_path;
         this.hash_size= hash_size;
-        this.highfreq_factor = highfreq_factor;
+
         try {
             this.image = ImageIO.read(new File(String.valueOf(image_path)));
         }catch (IOException e){
@@ -48,14 +47,31 @@ public class PHash {
         Graphics2D graphics2D = resizedImage.createGraphics();
         graphics2D.drawImage(image, 0, 0, witdh, height, null);
         graphics2D.dispose();
+        File output = new File(image_path.subpath(0, 2) + "reduceSize"  +image_path.getName(2));
 
-        File reduceImage = new File("pHash/TestImages/ReduceImage.jpg");
+
+        return resizedImage;
+
+    }
+
+    public BufferedImage resize (BufferedImage image , int width , int height){
+        BufferedImage tThumbImage = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
+        Graphics2D tGraphics2D = tThumbImage.createGraphics(); //create a graphics object to paint to
+        tGraphics2D.setBackground( Color.WHITE );
+        tGraphics2D.setPaint( Color.WHITE );
+        tGraphics2D.fillRect( 0, 0, width, height );
+        tGraphics2D.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
+        tGraphics2D.drawImage( image, 0, 0, width, height, null ); //draw the image scaled
+
+        File output = new File(image_path.subpath(0, 2) + "Resize"  +image_path.getName(2));
+
         try {
-            ImageIO.write(resizedImage,"jpg",reduceImage);
+            ImageIO.write( tThumbImage, "JPG", output ); //write the image to a file
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return resizedImage;
+
+        return  tThumbImage;
     }
 
 
@@ -81,7 +97,7 @@ public class PHash {
     // Change the RGB components of the image to a gray scale
     public BufferedImage changeColor (BufferedImage image) throws  IOException{
         File grey_image = null;
-        for(int j=0 ; j< image.getHeight(); j++){
+       for(int j=0 ; j< image.getHeight(); j++){
             for (int i = 0; i< image.getWidth() ; i++){
 
                 //Get pixels values and extract its RGB values
@@ -132,12 +148,6 @@ public class PHash {
             for (int y = 0; y < imageMatrix[x].length; y++) {
                 image.setRGB(x, y, (int) Math.round(imageMatrix[x][y]));
             }
-        };
-        File output = new File("Image/TestImages/DCT_2.jpg");
-        try {
-            ImageIO.write(image, "jpg", output);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return image;
     }
