@@ -10,18 +10,18 @@ public class Test {
 
     public static void main(String args[]) throws IOException  //static method
     {
-        PHash cat = new PHash(Path.of("Images/TestImages/tree1.jpeg"), 8 ,4 );
-        cat.reduceSize(cat.getImage(),8,8);
+        PHash image1 = new PHash(Path.of("Images/TestImages/tree2.jpeg"), 8 ,4 );
+        image1.reduceSize(image1.getImage(),8,8);
 
-        BufferedImage file2 = cat.changeColor(cat.getImage());
-        String str2 = cat.DCT(cat.convertTo2DUsingGetRGB(file2), file2.getHeight());
+        BufferedImage file2 = image1.changeColor(image1.getImage());
+        String str2 = image1.DCT(image1.convertTo2DUsingGetRGB(file2), file2.getHeight());
 
-       PHash tree1 = new PHash(Path.of("Images/TestImages/Lake.jpeg"), 8 ,4 );
-        tree1.reduceSize(tree1.getImage(),8,8);
-        BufferedImage file1 = tree1.changeColor(tree1.getImage());
-        String str1= tree1.DCT(tree1.convertTo2DUsingGetRGB(file1), file1.getHeight());
+       PHash image2 = new PHash(Path.of("Images/TestImages/tree1.jpeg"), 8 ,4 );
+        image2.reduceSize(image2.getImage(),8,8);
+        BufferedImage file1 = image2.changeColor(image2.getImage());
+        String str1= image2.DCT(image2.convertTo2DUsingGetRGB(file1), file1.getHeight());
 
-        int distance = tree1.hammingDist(str1,str2);
+        int distance = image2.hammingDist(str1,str2);
 
         System.out.println(distance);
     }

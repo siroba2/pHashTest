@@ -57,7 +57,7 @@ public class PHash {
         }
         return resizedImage;
     }
-    
+
 
     public static BufferedImage convertToBufferedImage(Image img) {
 
@@ -208,7 +208,7 @@ public class PHash {
                 }
                 sum *= (c[u] * c[v]) / 4.0;
                 DST[u][v] = sum;
-                System.out.println(sum);
+                //System.out.println(sum);
 
             }
         }
