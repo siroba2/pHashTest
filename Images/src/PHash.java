@@ -13,60 +13,58 @@ public class PHash {
     //Define attributes of the class
     private BufferedImage image = null;
     //private String image_path = " ";
-    private Path image_path ;
+    private Path image_path;
     private int size = 32;
-    private int hash_size= 8;
+    private int hash_size = 8;
 
-    private double [] c = new double [size];
-
-
+    private double[] c = new double[size];
 
 
     //Constructor
-    public PHash(Path image_path , int size) throws IOException {
-        this.image_path= image_path;
-        this.size= size;
+    public PHash(Path image_path, int size) throws IOException {
+        this.image_path = image_path;
+        this.size = size;
         this.initializeCoefficients();
 
         try {
             this.image = ImageIO.read(new File(String.valueOf(image_path)));
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void initializeCoefficients() {
-        for (int i=1;i<size;i++) {
-            c[i]=1;
+        for (int i = 1; i < size; i++) {
+            c[i] = 1;
         }
-        c[0]=1/Math.sqrt(2.0);
+        c[0] = 1 / Math.sqrt(2.0);
     }
 
     //
-    public BufferedImage getImage(){
+    public BufferedImage getImage() {
 
         return this.image;
     }
 
 
-    public BufferedImage resize (BufferedImage image , int width , int height){
-        BufferedImage tThumbImage = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
+    public BufferedImage resize(BufferedImage image, int width, int height) {
+        BufferedImage tThumbImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D tGraphics2D = tThumbImage.createGraphics(); //create a graphics object to paint to
-        tGraphics2D.setBackground( Color.WHITE );
-        tGraphics2D.setPaint( Color.WHITE );
-        tGraphics2D.fillRect( 0, 0, width, height );
-        tGraphics2D.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
-        tGraphics2D.drawImage( image, 0, 0, width, height, null ); //draw the image scaled
+        tGraphics2D.setBackground(Color.WHITE);
+        tGraphics2D.setPaint(Color.WHITE);
+        tGraphics2D.fillRect(0, 0, width, height);
+        tGraphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        tGraphics2D.drawImage(image, 0, 0, width, height, null); //draw the image scaled
 
-        File output = new File(image_path.subpath(0, 2) + "Resize"  +image_path.getName(2));
+        File output = new File(image_path.subpath(0, 2) + "Resize" + image_path.getName(2));
 
         try {
-            ImageIO.write( tThumbImage, "JPG", output ); //write the image to a file
+            ImageIO.write(tThumbImage, "JPG", output); //write the image to a file
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return  tThumbImage;
+        return tThumbImage;
     }
 
 
@@ -90,13 +88,13 @@ public class PHash {
 
 
     // Change the RGB components of the image to a gray scale
-    public BufferedImage changeColor (BufferedImage image) throws  IOException{
+    public BufferedImage changeColor(BufferedImage image) throws IOException {
         File grey_image = null;
-       for(int j=0 ; j< image.getHeight(); j++){
-            for (int i = 0; i< image.getWidth() ; i++){
+        for (int j = 0; j < image.getHeight(); j++) {
+            for (int i = 0; i < image.getWidth(); i++) {
 
                 //Get pixels values and extract its RGB values
-                int pixel = image.getRGB(i,j); // i == x ; j == y
+                int pixel = image.getRGB(i, j); // i == x ; j == y
                 int alpha = (pixel >> 24) & 0xff;
                 int red = (pixel >> 16) & 0xff;
                 int green = (pixel >> 8) & 0xff;
@@ -104,17 +102,17 @@ public class PHash {
 
                 //Find average and set new pixel value
 
-                int avg  = (red + blue + green) / 3;
-                pixel = (alpha <<24) | (avg << 16) | (avg << 8) | avg;
-                image.setRGB(i , j , pixel);
+                int avg = (red + blue + green) / 3;
+                pixel = (alpha << 24) | (avg << 16) | (avg << 8) | avg;
+                image.setRGB(i, j, pixel);
 
             }
         }
 
         //Write the grey image
-        grey_image = new File(image_path.subpath(0, 2) + "GreyImage"  +image_path.getName(2));
+        grey_image = new File(image_path.subpath(0, 2) + "GreyImage" + image_path.getName(2));
         try {
-            ImageIO.write(image,"jpg",grey_image);
+            ImageIO.write(image, "jpg", grey_image);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -127,9 +125,9 @@ public class PHash {
         int width = image.getWidth();
         int height = image.getHeight();
         //int[][] result = new int[height][width];
-        double [][] result = new double[width][ height];
+        double[][] result = new double[width][height];
 
-        for (int row = 0; row < width ; row++) {
+        for (int row = 0; row < width; row++) {
             for (int col = 0; col < height; col++) {
                 result[row][col] = image.getRGB(row, col);
             }
@@ -138,10 +136,21 @@ public class PHash {
         return result;
     }
 
+    public static double[][] transpose(double[][] arr) {
+        double[][] transposedMatrix = new double[arr[0].length][arr.length];
 
-    public static void writeImage(double[][] image, int width, int height, String filename){
+        for(int x = 0; x < transposedMatrix.length; x++) {
+            for(int y = 0; y < transposedMatrix[0].length; y++) {
+                transposedMatrix[x][y] = arr[y][x];
+            }
+        }
+
+        return transposedMatrix;
+    }
+
+    public static void writeImage(double[][] image, int width, int height, String filename) {
         // flatten the 2d array
-        double[] result = Arrays.stream(image)
+        double[] result = Arrays.stream(transpose(image))
                 .flatMapToDouble(Arrays::stream)
                 .toArray();
 
@@ -158,7 +167,7 @@ public class PHash {
         }
     }
 
-    public static void writeImage(int[][] image, int width, int height, String filename){
+    public static void writeImage(int[][] image, int width, int height, String filename) {
         // flatten the 2d array
         int[] result = Arrays.stream(image)
                 .flatMapToInt(Arrays::stream)
@@ -176,34 +185,34 @@ public class PHash {
     }
 
 
-
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
 
-     //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public String DCT (BufferedImage img, int dim)  {
+    //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
+    public String DCT(BufferedImage img, int dim) {
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
-    File DCT_image ;
-    double [][] DST = new double[dim][dim];
-    int N = size ;
+        File DCT_image;
+        double[][] DST = new double[dim][dim];
+        int N = size;
 
-        double[][] vals = new double [size][size];
+        double[][] vals;
 
         vals = convertTo2DUsingGetRGB(img);
-       for (int u = 0; u < N; u++) {
+        for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
 
-                       sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (vals[i][j]);
+                        sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (vals[i][j]);
 
 
                     }
 
                 }
-               // sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
-                sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
+                // sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
+                // sum *= (2 * c[u] * c[v]) / Math.sqrt(32 * 32);
+                sum *= (c[u] * c[v]) / 16.0;
 
                 DST[u][v] = sum;
                 //System.out.println(sum);
@@ -212,42 +221,34 @@ public class PHash {
         }
 
 
-
-
-
-        writeImage(DST, size, size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
+        writeImage(DST, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
 
 
         //IDCT
 
 
-
         double[][] f = new double[N][N];
 
-        for (int i=0;i<N;i++) {
-            for (int j=0;j<N;j++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
                 double sum = 0.0;
-                for (int u=0;u<N;u++) {
-                    for (int v=0;v<N;v++) {
-                        sum+=(c[u]*c[v])/4.0*Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*DST[u][v];
+                for (int u = 0; u < N; u++) {
+                    for (int v = 0; v < N; v++) {
+                        sum += (c[u] * c[v]) / 16.0 * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DST[u][v];
                     }
                 }
-                f[i][j]=Math.round(sum);
+                f[i][j] = Math.round(sum);
             }
         }
 
-        writeImage(f, size, size,  image_path.subpath(0, 2) + "IDCT"  +image_path.getName(2));
-
-
-
-
+        writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
 
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
 
-        for(int x = 0; x < hash_size; x++){
-            for(int y = 0 ; y< hash_size ; y++){
+        for (int x = 0; x < hash_size; x++) {
+            for (int y = 0; y < hash_size; y++) {
                 total += DST[x][y];
             }
         }
@@ -255,7 +256,7 @@ public class PHash {
         total -= DST[0][0];
         //System.out.println("total  " + total);
 
-        double avg = total / (double) (hash_size* hash_size - 1);
+        double avg = total / (double) (hash_size * hash_size - 1);
 
         // Further reduce the DCT.
 
@@ -294,12 +295,11 @@ public class PHash {
         System.out.println(stringBuilder.toString());
 
     }
+
     //Hamming distance
-    public int hammingDist(String str1, String str2)
-    {
+    public int hammingDist(String str1, String str2) {
         int i = 0, count = 0;
-        while(i < str1.length())
-        {
+        while (i < str1.length()) {
             if (str1.charAt(i) != str2.charAt(i))
                 count++;
             i++;
