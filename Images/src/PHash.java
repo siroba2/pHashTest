@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import static java.lang.Math.cos;
-
 public class PHash {
 
     //Define attributes of the class
@@ -125,11 +123,11 @@ public class PHash {
 
     }
 
-    public  int[][] convertTo2DUsingGetRGB(BufferedImage image) {
+    public double[][] convertTo2DUsingGetRGB(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
         //int[][] result = new int[height][width];
-        int[][] result = new int[width][ height];
+        double [][] result = new double[width][ height];
 
         for (int row = 0; row < width ; row++) {
             for (int col = 0; col < height; col++) {
@@ -182,45 +180,38 @@ public class PHash {
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
 
      //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public String DCT (int[][] image , int dim) throws  IOException{
+    public String DCT (BufferedImage img, int dim)  {
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
     File DCT_image ;
     double [][] DST = new double[dim][dim];
     int N = size ;
-      /*  for (int u = 0; u < N; u++) {
+
+        double[][] vals = new double [size][size];
+
+        vals = convertTo2DUsingGetRGB(img);
+       for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
 
-                       sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (image[i][j]);
+                       sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (vals[i][j]);
 
 
                     }
 
                 }
-                sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
-                //sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
+               // sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
+                sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
 
                 DST[u][v] = sum;
                 //System.out.println(sum);
 
             }
-        }*/
-
-        for (int u=0;u<N;u++) {
-            for (int v=0;v<N;v++) {
-                double sum = 0.0;
-                for (int i=0;i<N;i++) {
-                    for (int j=0;j<N;j++) {
-                        sum+=Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*image[i][j];
-                    }
-                }
-                sum*=((c[u]*c[v])/4.0);
-                DST[u][v]=sum;
-            }
         }
+
+
 
 
 
@@ -232,6 +223,7 @@ public class PHash {
 
 
         double[][] f = new double[N][N];
+
         for (int i=0;i<N;i++) {
             for (int j=0;j<N;j++) {
                 double sum = 0.0;
@@ -276,11 +268,30 @@ public class PHash {
                 }
             }
         }
-
         String phash = hash.toString();
         System.out.println(phash);
 
+
         return phash;
+
+    }
+
+    private double getBlue(BufferedImage img, int x, int y) {
+        return (img.getRGB(x, y)) & 0xff;
+    }
+
+
+    private static void convertStringToHex(String str) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        char[] charArray = str.toCharArray();
+
+        for (char c : charArray) {
+            String charToHex = Integer.toHexString(c);
+            stringBuilder.append(charToHex);
+        }
+
+        System.out.println(stringBuilder.toString());
 
     }
     //Hamming distance
@@ -295,6 +306,6 @@ public class PHash {
         }
         return count;
     }
-    
+
 
 }
