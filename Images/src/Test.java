@@ -23,8 +23,7 @@ public class Test {
 
         int distance = image2.hammingDist(str1,str2);
 
-        System.out.println(distance);
+        System.out.println(distance);*/
 
-        */
     }
 }

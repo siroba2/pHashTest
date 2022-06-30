@@ -19,6 +19,8 @@ public class PHash {
     private int size = 32;
     private int hash_size= 8;
 
+    private double [] c = new double [size];
+
 
 
 
@@ -26,12 +28,20 @@ public class PHash {
     public PHash(Path image_path , int size) throws IOException {
         this.image_path= image_path;
         this.size= size;
+        this.initializeCoefficients();
 
         try {
             this.image = ImageIO.read(new File(String.valueOf(image_path)));
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void initializeCoefficients() {
+        for (int i=1;i<size;i++) {
+            c[i]=1;
+        }
+        c[0]=1/Math.sqrt(2.0);
     }
 
     //
@@ -118,11 +128,12 @@ public class PHash {
     public  int[][] convertTo2DUsingGetRGB(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
-        int[][] result = new int[height][width];
+        //int[][] result = new int[height][width];
+        int[][] result = new int[width][ height];
 
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                result[row][col] = image.getRGB(col, row);
+        for (int row = 0; row < width ; row++) {
+            for (int col = 0; col < height; col++) {
+                result[row][col] = image.getRGB(row, col);
             }
         }
 
@@ -137,7 +148,7 @@ public class PHash {
                 .toArray();
 
         BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        //BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         WritableRaster raster = outputImage.getRaster();
         raster.setSamples(0, 0, width, height, 0, result);
@@ -177,12 +188,7 @@ public class PHash {
     File DCT_image ;
     double [][] DST = new double[dim][dim];
     int N = size ;
-    double [] c = new double[size];
-        for (int i = 1; i < size; i++) {
-            c[i] = 1;
-        }
-        c[0] = 1 / Math.sqrt(2.0);
-        for (int u = 0; u < N; u++) {
+      /*  for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
                 for (int i = 0; i < N; i++) {
@@ -194,45 +200,56 @@ public class PHash {
                     }
 
                 }
-                //sum *= (c[u] * c[v]) / 4.0; This only works for 8x8 bloc of data
-                sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
+                sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
+                //sum *= (2*c[u]*c[v])/Math.sqrt(32*32);
+
                 DST[u][v] = sum;
                 //System.out.println(sum);
 
             }
+        }*/
+
+        for (int u=0;u<N;u++) {
+            for (int v=0;v<N;v++) {
+                double sum = 0.0;
+                for (int i=0;i<N;i++) {
+                    for (int j=0;j<N;j++) {
+                        sum+=Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*image[i][j];
+                    }
+                }
+                sum*=((c[u]*c[v])/4.0);
+                DST[u][v]=sum;
+            }
         }
 
-/*
-        int i, j, u, v;
-        double constU, constV, Cu, Cv, Cuv, tmp;
-        double constOp = Math.PI/16.0;
-        double opt1= 0.5 /Math.sqrt(2);
-        double opt2 = 0.5;
-
-        for (u = 0; u < 8; u++) {
-            constU = u * constOp;
-            Cu = (u == 0) ? opt1 : opt2;
-
-            for (v = 0; v < 8; v++) {
-                constV = v * constOp;
-                Cv = (v == 0) ? opt1 : opt2;
-                Cuv = Cu * Cv;
-                tmp = 0.0;
-
-                for (i = 0; i < 8; i++) {
-                    for (j = 0; j < 8; j++) {
-                        tmp += Cuv * image[i ][j] * Math.cos((2 * i + 1) * constU) * Math.cos((2 * j + 1) * constV);
-                    }
-
-                    DST[u ][v] = (int) tmp;
-                    System.out.println(tmp);
-
-                }
-            }
-        }*/
 
 
         writeImage(DST, size, size,  image_path.subpath(0, 2) + "DCT"  +image_path.getName(2));
+
+
+        //IDCT
+
+
+
+        double[][] f = new double[N][N];
+        for (int i=0;i<N;i++) {
+            for (int j=0;j<N;j++) {
+                double sum = 0.0;
+                for (int u=0;u<N;u++) {
+                    for (int v=0;v<N;v++) {
+                        sum+=(c[u]*c[v])/4.0*Math.cos(((2*i+1)/(2.0*N))*u*Math.PI)*Math.cos(((2*j+1)/(2.0*N))*v*Math.PI)*DST[u][v];
+                    }
+                }
+                f[i][j]=Math.round(sum);
+            }
+        }
+
+        writeImage(f, size, size,  image_path.subpath(0, 2) + "IDCT"  +image_path.getName(2));
+
+
+
+
+
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
@@ -278,9 +295,6 @@ public class PHash {
         }
         return count;
     }
-
-
-
-
+    
 
 }
