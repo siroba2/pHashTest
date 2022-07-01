@@ -18,7 +18,7 @@ public class Test {
         BufferedImage image2Reduced = image2.resize(image2.getImage(),32,32);
         BufferedImage greyImage2 = image2.changeColor(image2Reduced);
         String str1= image2.DCT(greyImage2, greyImage2.getHeight());
-
+        System.out.println(str1);
         int distance = image2.hammingDist(str1,str2);
 
         System.out.println(distance);

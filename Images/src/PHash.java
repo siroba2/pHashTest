@@ -56,13 +56,13 @@ public class PHash {
         tGraphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         tGraphics2D.drawImage(image, 0, 0, width, height, null); //draw the image scaled
 
-        File output = new File(image_path.subpath(0, 2) + "Resize" + image_path.getName(2));
+       /* File output = new File(image_path.subpath(0, 2) + "Resize" + image_path.getName(2));
 
         try {
             ImageIO.write(tThumbImage, "JPG", output); //write the image to a file
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        }*/
 
         return tThumbImage;
     }
@@ -284,9 +284,6 @@ public class PHash {
         return Long.toString(decimal,16);
     }
 
-    private double getBlue(BufferedImage img, int x, int y) {
-        return (img.getRGB(x, y)) & 0xff;
-    }
 
 
     private static void convertStringToHex(String str) {
