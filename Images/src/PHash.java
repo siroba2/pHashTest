@@ -5,6 +5,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -256,8 +257,8 @@ public class PHash {
         //Reduce the DCT and compute the average value
         double total = 0.0;
 
-        for (int x = 0; x < hash_size; x++) {
-            for (int y = 0; y < hash_size; y++) {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
                 total += DST[x][y];
             }
         }
@@ -265,30 +266,38 @@ public class PHash {
         total -= DST[0][0];
         //System.out.println("total  " + total);
 
-        double avg = total / (double) (hash_size * hash_size - 1);
+        double avg = total / (double) (size * size - 1);
 
         // Further reduce the DCT.
 
         StringBuilder hash = new StringBuilder();
 
-        for (int x = 0; x < hash_size; x++) {
-            for (int y = 0; y < hash_size; y++) {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
                 if (x != 0 && y != 0) {
                     hash.append(DST[x][y] > avg ? "1" : "0");
                 }
             }
         }
-        String phash = hash.toString();
-        System.out.println(binToHex(phash));
+       String phash = hash.toString();
+        //System.out.println(binToHex(phash));
+        System.out.println(longBinToHex(phash));
 
 
         return phash;
 
     }
 
+
+
     public static String binToHex(String bin) {
         long decimal = Long.parseLong(bin,2);
         return Long.toString(decimal,16);
+    }
+
+    public  static String longBinToHex (String bin){
+        BigInteger b = new BigInteger(bin, 2);
+        return b.toString(16);
     }
 
 
