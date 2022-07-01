@@ -210,9 +210,11 @@ public class PHash {
                     }
 
                 }
-                // sum *= (c[u] * c[v]) / 4.0; //This only works for 8x8 bloc of data
-                // sum *= (2 * c[u] * c[v]) / Math.sqrt(32 * 32);
-                sum *= (c[u] * c[v]) / 16.0;
+
+                // sum *= (2 * c[u] * c[v]) / sqrt(size * size) =
+                // sum *= (2 * c[u] * c[v]) / size =
+                // sum *= (    c[u] * c[v]) / (size/2.0)
+                sum *= (c[u] * c[v]) / (size / 2.0);
 
                 DST[u][v] = sum;
                 //System.out.println(sum);
@@ -234,7 +236,7 @@ public class PHash {
                 double sum = 0.0;
                 for (int u = 0; u < N; u++) {
                     for (int v = 0; v < N; v++) {
-                        sum += (c[u] * c[v]) / 16.0 * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DST[u][v];
+                        sum += (c[u] * c[v]) / (size / 2.0) * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DST[u][v];
                     }
                 }
                 f[i][j] = Math.round(sum);
@@ -270,11 +272,16 @@ public class PHash {
             }
         }
         String phash = hash.toString();
-        System.out.println(phash);
+        System.out.println(binToHex(phash));
 
 
         return phash;
 
+    }
+
+    public static String binToHex(String bin) {
+        long decimal = Long.parseLong(bin,2);
+        return Long.toString(decimal,16);
     }
 
     private double getBlue(BufferedImage img, int x, int y) {
