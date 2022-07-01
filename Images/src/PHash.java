@@ -116,7 +116,7 @@ public class PHash {
 
             }
         }
-
+        /*
         //Write the grey image
         grey_image = new File(image_path.subpath(0, 2) + "GreyImage" + image_path.getName(2));
         try {
@@ -124,8 +124,8 @@ public class PHash {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        BufferedImage newImage = ImageIO.read(grey_image);
-        return newImage;
+        BufferedImage newImage = ImageIO.read(image);*/
+        return image;
 
     }
 
@@ -196,7 +196,22 @@ public class PHash {
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
 
     //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public String DCT(BufferedImage img, int dim) {
+    public String DCT(Path image_path, int dim) {
+        BufferedImage img = null;
+        try {
+            img = ImageIO.read(new File(String.valueOf(image_path)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        BufferedImage imgResized = resize(img, 32, 32);
+
+        BufferedImage greyImg;
+        try {
+            greyImg = changeColor(imgResized);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
         File DCT_image;
@@ -205,7 +220,7 @@ public class PHash {
 
         double[][] vals;
 
-        vals = convertTo2DUsingGetRGB(img);
+        vals = convertTo2DUsingGetRGB(greyImg);
         for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
@@ -231,7 +246,7 @@ public class PHash {
         }
 
 
-        writeImage(DST, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
+        //writeImage(DST, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
 
 
         //IDCT
@@ -251,7 +266,7 @@ public class PHash {
             }
         }
 
-        writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
+        //writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
 
 
         //Reduce the DCT and compute the average value
@@ -279,11 +294,7 @@ public class PHash {
                 }
             }
         }
-       String phash = hash.toString();
-        //System.out.println(binToHex(phash));
-        System.out.println(longBinToHex(phash));
-
-
+        String phash = longBinToHex(hash.toString());
         return phash;
 
     }
