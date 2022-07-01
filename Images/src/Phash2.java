@@ -99,6 +99,7 @@ public class Phash2 {
         IDCT = applyIDCT(dctVals);
         writeImage(IDCT, size, size,  is.subpath(0, 2) + "IDCT--Phash2"  +is.getName(2));
 
+        //double avg = total / (double) (smallerSize * smallerSize - 1);
         double avg = total / (double) (smallerSize * smallerSize - 1);
 
         /* 6. Further reduce the DCT.

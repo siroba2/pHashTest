@@ -5,6 +5,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -31,6 +32,12 @@ public class PHash {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public PHash(String str, int size) throws IOException {
+        this.size = size;
+        this.initializeCoefficients();
+        this.image = readURL(str);
     }
 
     private void initializeCoefficients() {
@@ -309,6 +316,19 @@ public class PHash {
             i++;
         }
         return count;
+    }
+
+
+    public BufferedImage readURL (String str){
+        Image image = null;
+        try {
+            URL url = new URL(str);
+            image = ImageIO.read(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return (BufferedImage) image;
     }
 
 
