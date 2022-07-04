@@ -287,15 +287,18 @@ public class PHash {
 
         StringBuilder hash = new StringBuilder();
 
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
-                if (x != 0 && y != 0) {
+        for (int x = 0; x < 32; x++) {
+            for (int y = 0; y < 32; y++) {
+               // if (x != 0 && y != 0) {
                     hash.append(DST[x][y] > avg ? "1" : "0");
-                }
+               // }
             }
         }
         String phash = longBinToHex(hash.toString());
-        return phash;
+        System.out.println("Phash hexadecimal:" + phash);
+        System.out.println("Phash hexadecimal length: " + phash.length());
+        String binary = hash.toString();
+        return binary;
 
     }
 
