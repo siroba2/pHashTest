@@ -16,12 +16,12 @@ public class Test {
         //System.out.println("Phash binary: " +str1);
        // System.out.println("Phash binary length : " +str1.length());
 
-        PHash image2 = new PHash(Path.of("Images/TestImages/Scopely_MA.jpeg"), 32);
+        PHash image2 = new PHash(Path.of("Images/TestImages/Scopely_X2.jpg"), 32);
 
         //PHash imageURL = new PHash("https://scopely.widen.net/content/tvkl1flyei/original/MSF-17998_Delta-TC-Gameplay--Rogue_EN_1080x1080_C1_V1.jpg?u=3mz6gd&download=true&x.share=t", 32);
         //BufferedImage imageURLReduced = image2.resize(imageURL.getImage(),32,32);
         //BufferedImage greyImageURL = image2.changeColor(imageURLReduced);
-        String str2= image2.DCT(Path.of("Images/TestImages/Scopely_MA.jpeg"), 32);
+        String str2= image2.DCT(Path.of("Images/TestImages/Scopely_X2.jpg"), 32);
         //System.out.println("Phash binary: " +str1);
         //System.out.println("Phash binary length : " +str1.length());
         int distance = image1.hammingDist(str1,str2);
