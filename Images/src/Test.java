@@ -10,10 +10,10 @@ public class Test {
 
     public static void main(String args[]) throws IOException  //static method
     {
-        PHash image1 = new PHash(Path.of("Images/TestImages/Scopely.jpeg"), 32);
+        PHash image1 = new PHash(Path.of("Images/TestImages/Test2.jpg"), 32);
 
-        String str1= image1.DCT(Path.of("Images/TestImages/Scopely.jpeg"), 32);
-        //System.out.println("Phash binary: " +str1);
+        String str1= image1.DCT(Path.of("Images/TestImages/Test2.jpg"), 32);
+        System.out.println("Phash binary: " +str1);
        // System.out.println("Phash binary length : " +str1.length());
 
         PHash image2 = new PHash(Path.of("Images/TestImages/Scopely_X2.jpg"), 32);
