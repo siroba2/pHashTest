@@ -214,32 +214,24 @@ public class PHash {
         }
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
-        File DCT_image;
-        double[][] DST = new double[dim][dim];
+        double[][] DCT = new double[dim][dim];
         int N = size;
-
         double[][] vals;
-
         vals = convertTo2DUsingGetRGB(greyImg);
         for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
-
                         sum += Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * (vals[i][j]);
-
-
                     }
-
                 }
-
                 // sum *= (2 * c[u] * c[v]) / sqrt(size * size) =
                 // sum *= (2 * c[u] * c[v]) / size =
                 // sum *= (    c[u] * c[v]) / (size/2.0)
                 sum *= (c[u] * c[v]) / (size / 2.0);
 
-                DST[u][v] = sum;
+                DCT[u][v] = sum;
                 //System.out.println(sum);
 
             }
@@ -259,7 +251,7 @@ public class PHash {
                 double sum = 0.0;
                 for (int u = 0; u < N; u++) {
                     for (int v = 0; v < N; v++) {
-                        sum += (c[u] * c[v]) / (size / 2.0) * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DST[u][v];
+                        sum += (c[u] * c[v]) / (size / 2.0) * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DCT[u][v];
                     }
                 }
                 f[i][j] = Math.round(sum);
@@ -274,11 +266,11 @@ public class PHash {
 
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
-                total += DST[x][y];
+                total += DCT[x][y];
             }
         }
 
-        total -= DST[0][0];
+        total -= DCT[0][0];
         //System.out.println("total  " + total);
 
         double avg = total / (double) (size * size - 1);
@@ -287,15 +279,18 @@ public class PHash {
 
         StringBuilder hash = new StringBuilder();
 
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
-                if (x != 0 && y != 0) {
-                    hash.append(DST[x][y] > avg ? "1" : "0");
-                }
+        for (int x = 0; x < 32; x++) {
+            for (int y = 0; y < 32; y++) {
+               // if (x != 0 && y != 0) {
+                    hash.append(DCT[x][y] > avg ? "1" : "0");
+               // }
             }
         }
         String phash = longBinToHex(hash.toString());
-        return phash;
+        System.out.println("Phash hexadecimal:" + phash);
+        System.out.println("Phash hexadecimal length: " + phash.length());
+        String binary = hash.toString();
+        return binary;
 
     }
 
