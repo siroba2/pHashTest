@@ -10,18 +10,18 @@ public class Test {
 
     public static void main(String args[]) throws IOException  //static method
     {
-        PHash image1 = new PHash(Path.of("Images/TestImages/Test2.jpg"), 32);
+        PHash image1 = new PHash(Path.of("Images/TestImages/out64.png"));
 
-        String str1= image1.DCT(Path.of("Images/TestImages/Test2.jpg"), 32);
+        String str1= image1.DCT();
         System.out.println("Phash binary: " +str1);
        // System.out.println("Phash binary length : " +str1.length());
 
-        PHash image2 = new PHash(Path.of("Images/TestImages/Scopely_X2.jpg"), 32);
+        PHash image2 = new PHash(Path.of("Images/TestImages/out65.png"));
 
-        //PHash imageURL = new PHash("https://scopely.widen.net/content/tvkl1flyei/original/MSF-17998_Delta-TC-Gameplay--Rogue_EN_1080x1080_C1_V1.jpg?u=3mz6gd&download=true&x.share=t", 32);
+        PHash imageURL = new PHash("https://scopely.widen.net/content/tvkl1flyei/original/MSF-17998_Delta-TC-Gameplay--Rogue_EN_1080x1080_C1_V1.jpg?u=3mz6gd&download=true&x.share=t");
         //BufferedImage imageURLReduced = image2.resize(imageURL.getImage(),32,32);
         //BufferedImage greyImageURL = image2.changeColor(imageURLReduced);
-        String str2= image2.DCT(Path.of("Images/TestImages/Scopely_X2.jpg"), 32);
+        String str2= image2.DCT();
         //System.out.println("Phash binary: " +str1);
         //System.out.println("Phash binary length : " +str1.length());
         int distance = image1.hammingDist(str1,str2);
