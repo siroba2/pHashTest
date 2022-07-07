@@ -23,9 +23,9 @@ public class PHash {
 
 
     //Constructor
-    public PHash(Path image_path, int size) throws IOException {
+    public PHash(Path image_path) throws IOException {
         this.image_path = image_path;
-        this.size = size;
+
         this.initializeCoefficients();
 
         try {
@@ -35,7 +35,7 @@ public class PHash {
         }
     }
 
-    public PHash(String str, int size) throws IOException {
+    public PHash(String str) throws IOException {
         this.size = size;
         this.initializeCoefficients();
         this.image = readURL(str);
@@ -196,13 +196,8 @@ public class PHash {
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
 
     //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
-    public String DCT(Path image_path, int dim) {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(new File(String.valueOf(image_path)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public String DCT() {
+        BufferedImage img = getImage();
 
         BufferedImage imgResized = resize(img, 32, 32);
 
@@ -214,7 +209,7 @@ public class PHash {
         }
 
         //1º Compute the DCT (into a collection of frequencies and scalars)
-        double[][] DCT = new double[dim][dim];
+        double[][] DCT = new double[size][size];
         int N = size;
         double[][] vals;
         vals = convertTo2DUsingGetRGB(greyImg);
@@ -287,10 +282,10 @@ public class PHash {
             }
         }
         String phash = longBinToHex(hash.toString());
-        System.out.println("Phash hexadecimal:" + phash);
-        System.out.println("Phash hexadecimal length: " + phash.length());
-        String binary = hash.toString();
-        return binary;
+       // System.out.println("Phash hexadecimal:" + phash);
+        //System.out.println("Phash hexadecimal length: " + phash.length());
+        //String binary = hash.toString();
+        return phash;
 
     }
 
