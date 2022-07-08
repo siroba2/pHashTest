@@ -18,8 +18,13 @@ public class PHash {
     private Path image_path;
     private int size = 32;
     private int hash_size = 8;
+    private String hashHex;
 
     private double[] c = new double[size];
+
+    public String getHashHex(){
+        return this.hashHex;
+    }
 
 
     //Constructor
@@ -137,7 +142,7 @@ public class PHash {
 
         for (int row = 0; row < width; row++) {
             for (int col = 0; col < height; col++) {
-                result[row][col] = image.getRGB(row, col);
+                result[row][col] = image.getRGB(row, col) & 0xff;
             }
         }
 
@@ -233,7 +238,7 @@ public class PHash {
         }
 
 
-        //writeImage(DST, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
+        writeImage(DCT, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
 
 
         //IDCT
@@ -253,7 +258,7 @@ public class PHash {
             }
         }
 
-        //writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
+        writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
 
 
         //Reduce the DCT and compute the average value
@@ -268,24 +273,24 @@ public class PHash {
         total -= DCT[0][0];
         //System.out.println("total  " + total);
 
-        double avg = total / (double) (size * size - 1);
-
+       double avg = total / (double) (size * size - 1);
+        //double avg = 127 * 32*32;
         // Further reduce the DCT.
 
         StringBuilder hash = new StringBuilder();
 
         for (int x = 0; x < 32; x++) {
             for (int y = 0; y < 32; y++) {
-               // if (x != 0 && y != 0) {
+                if (x != 0 && y != 0) {
                     hash.append(DCT[x][y] > avg ? "1" : "0");
-               // }
+                }
             }
         }
-        String phash = longBinToHex(hash.toString());
-       // System.out.println("Phash hexadecimal:" + phash);
-        //System.out.println("Phash hexadecimal length: " + phash.length());
-        //String binary = hash.toString();
-        return phash;
+        hashHex = longBinToHex(hash.toString());
+        //System.out.println("Phash hexadecimal:" + hashHex);
+        //System.out.println("Phash hexadecimal length: " + hashHex.length());
+        String binary = hash.toString();
+        return binary;
 
     }
 
