@@ -238,7 +238,7 @@ public class PHash {
         }
 
 
-        writeImage(DCT, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
+        //writeImage(DCT, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
 
 
         //IDCT
@@ -258,14 +258,14 @@ public class PHash {
             }
         }
 
-        writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
+        //writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
 
 
         //Reduce the DCT and compute the average value
         double total = 0.0;
 
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
+        for (int x = 0; x < hash_size; x++) {
+            for (int y = 0; y < hash_size; y++) {
                 total += DCT[x][y];
             }
         }
@@ -273,14 +273,14 @@ public class PHash {
         total -= DCT[0][0];
         //System.out.println("total  " + total);
 
-       double avg = total / (double) (size * size - 1);
+       double avg = total / (double) (hash_size * hash_size - 1);
         //double avg = 127 * 32*32;
         // Further reduce the DCT.
 
         StringBuilder hash = new StringBuilder();
 
-        for (int x = 0; x < 32; x++) {
-            for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < hash_size; x++) {
+            for (int y = 0; y < hash_size; y++) {
                 if (x != 0 && y != 0) {
                     hash.append(DCT[x][y] > avg ? "1" : "0");
                 }
