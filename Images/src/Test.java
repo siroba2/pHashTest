@@ -10,8 +10,8 @@ public class Test {
 
     public static void main(String args[]) throws IOException  //static method
     {
-       // PHash image1 = new PHash("https://scopely.widen.net/content/exv3fkkeh0");
-       PHash image1 = new PHash(Path.of("Images/Output/out305DE.png"));
+       PHash image1 = new PHash("https://scopely.widen.net/content/exv3fkkeh0");
+       //PHash image1 = new PHash(Path.of("Images/Output/out305DE.png"));
 
        String str1= image1.DCT();
         System.out.println("Phash  " +str1);
