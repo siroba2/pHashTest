@@ -17,7 +17,7 @@ public class PHash {
     //private String image_path = " ";
     private Path image_path;
     private int size = 32;
-    private int hash_size = 8;
+    private int hash_size = 32;
     private String hashHex;
 
     private double[] c = new double[size];
@@ -60,155 +60,18 @@ public class PHash {
     }
 
 
-    public BufferedImage resize(BufferedImage image, int width, int height) {
-        BufferedImage tThumbImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D tGraphics2D = tThumbImage.createGraphics(); //create a graphics object to paint to
-        tGraphics2D.setBackground(Color.WHITE);
-        tGraphics2D.setPaint(Color.WHITE);
-        tGraphics2D.fillRect(0, 0, width, height);
-        tGraphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        tGraphics2D.drawImage(image, 0, 0, width, height, null); //draw the image scaled
-
-       /* File output = new File(image_path.subpath(0, 2) + "Resize" + image_path.getName(2));
-
-        try {
-            ImageIO.write(tThumbImage, "JPG", output); //write the image to a file
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
-
-        return tThumbImage;
-    }
-
-
-    public static BufferedImage convertToBufferedImage(Image img) {
-
-        if (img instanceof BufferedImage) {
-            return (BufferedImage) img;
-        }
-
-        // Create a buffered image with transparency
-        BufferedImage bi = new BufferedImage(
-                img.getWidth(null), img.getHeight(null),
-                BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics2D = bi.createGraphics();
-        graphics2D.drawImage(img, 0, 0, null);
-        graphics2D.dispose();
-
-        return bi;
-    }
-
-
-    // Change the RGB components of the image to a gray scale
-    public BufferedImage changeColor(BufferedImage image) throws IOException {
-        File grey_image = null;
-        for (int j = 0; j < image.getHeight(); j++) {
-            for (int i = 0; i < image.getWidth(); i++) {
-
-                //Get pixels values and extract its RGB values
-                int pixel = image.getRGB(i, j); // i == x ; j == y
-                int alpha = (pixel >> 24) & 0xff;
-                int red = (pixel >> 16) & 0xff;
-                int green = (pixel >> 8) & 0xff;
-                int blue = pixel & 0xff;
-
-                //Find average and set new pixel value
-
-                int avg = (red + blue + green) / 3;
-                pixel = (alpha << 24) | (avg << 16) | (avg << 8) | avg;
-                image.setRGB(i, j, pixel);
-
-            }
-        }
-        /*
-        //Write the grey image
-        grey_image = new File(image_path.subpath(0, 2) + "GreyImage" + image_path.getName(2));
-        try {
-            ImageIO.write(image, "jpg", grey_image);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedImage newImage = ImageIO.read(image);*/
-        return image;
-
-    }
-
-    public double[][] convertTo2DUsingGetRGB(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        //int[][] result = new int[height][width];
-        double[][] result = new double[width][height];
-
-        for (int row = 0; row < width; row++) {
-            for (int col = 0; col < height; col++) {
-                result[row][col] = image.getRGB(row, col) & 0xff;
-            }
-        }
-
-        return result;
-    }
-
-    public static double[][] transpose(double[][] arr) {
-        double[][] transposedMatrix = new double[arr[0].length][arr.length];
-
-        for(int x = 0; x < transposedMatrix.length; x++) {
-            for(int y = 0; y < transposedMatrix[0].length; y++) {
-                transposedMatrix[x][y] = arr[y][x];
-            }
-        }
-
-        return transposedMatrix;
-    }
-
-    public static void writeImage(double[][] image, int width, int height, String filename) {
-        // flatten the 2d array
-        double[] result = Arrays.stream(transpose(image))
-                .flatMapToDouble(Arrays::stream)
-                .toArray();
-
-        BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        // BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        WritableRaster raster = outputImage.getRaster();
-        raster.setSamples(0, 0, width, height, 0, result);
-
-        try {
-            ImageIO.write(outputImage, "jpg", new File(filename));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void writeImage(int[][] image, int width, int height, String filename) {
-        // flatten the 2d array
-        int[] result = Arrays.stream(image)
-                .flatMapToInt(Arrays::stream)
-                .toArray();
-
-        BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        WritableRaster raster = outputImage.getRaster();
-        raster.setSamples(0, 0, width, height, 0, result);
-
-        try {
-            ImageIO.write(outputImage, "jpg", new File(filename));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java
 
     //Compute the DCT (discrete cosine transform), reduce the DCT and compute the average value
     public String DCT() {
         BufferedImage img = getImage();
-
-        BufferedImage imgResized = resize(img, 32, 32);
+        ImagePropierties auxImage = new ImagePropierties();
+        BufferedImage imgResized = auxImage.resize(img, 32, 32);
 
         BufferedImage greyImg;
         try {
-            greyImg = changeColor(imgResized);
+            greyImg = auxImage.changeColor(imgResized);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -217,7 +80,7 @@ public class PHash {
         double[][] DCT = new double[size][size];
         int N = size;
         double[][] vals;
-        vals = convertTo2DUsingGetRGB(greyImg);
+        vals = auxImage.convertTo2DUsingGetRGB(greyImg);
         for (int u = 0; u < N; u++) {
             for (int v = 0; v < N; v++) {
                 double sum = 0.0;
@@ -232,33 +95,9 @@ public class PHash {
                 sum *= (c[u] * c[v]) / (size / 2.0);
 
                 DCT[u][v] = sum;
-                //System.out.println(sum);
 
             }
         }
-
-
-        //writeImage(DCT, size, size, image_path.subpath(0, 2) + "DCT" + image_path.getName(2));
-
-
-        //IDCT
-
-
-        double[][] f = new double[N][N];
-
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                double sum = 0.0;
-                for (int u = 0; u < N; u++) {
-                    for (int v = 0; v < N; v++) {
-                        sum += (c[u] * c[v]) / (size / 2.0) * Math.cos(((2 * i + 1) / (2.0 * N)) * u * Math.PI) * Math.cos(((2 * j + 1) / (2.0 * N)) * v * Math.PI) * DCT[u][v];
-                    }
-                }
-                f[i][j] = Math.round(sum);
-            }
-        }
-
-        //writeImage(f, size, size, image_path.subpath(0, 2) + "IDCT" + image_path.getName(2));
 
 
         //Reduce the DCT and compute the average value
@@ -271,10 +110,8 @@ public class PHash {
         }
 
         total -= DCT[0][0];
-        //System.out.println("total  " + total);
 
        double avg = total / (double) (hash_size * hash_size - 1);
-        //double avg = 127 * 32*32;
         // Further reduce the DCT.
 
         StringBuilder hash = new StringBuilder();
@@ -286,53 +123,11 @@ public class PHash {
                 }
             }
         }
-        hashHex = longBinToHex(hash.toString());
-        //System.out.println("Phash hexadecimal:" + hashHex);
-        //System.out.println("Phash hexadecimal length: " + hashHex.length());
+        hashHex = MathAux.longBinToHex(hash.toString());
         String binary = hash.toString();
         return binary;
 
     }
-
-
-
-    public static String binToHex(String bin) {
-        long decimal = Long.parseLong(bin,2);
-        return Long.toString(decimal,16);
-    }
-
-    public  static String longBinToHex (String bin){
-        BigInteger b = new BigInteger(bin, 2);
-        return b.toString(16);
-    }
-
-
-
-    private static void convertStringToHex(String str) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        char[] charArray = str.toCharArray();
-
-        for (char c : charArray) {
-            String charToHex = Integer.toHexString(c);
-            stringBuilder.append(charToHex);
-        }
-
-        System.out.println(stringBuilder.toString());
-
-    }
-
-    //Hamming distance
-    public int hammingDist(String str1, String str2) {
-        int i = 0, count = 0;
-        while (i < str1.length()) {
-            if (str1.charAt(i) != str2.charAt(i))
-                count++;
-            i++;
-        }
-        return count;
-    }
-
 
     public BufferedImage readURL (String str){
         Image image = null;
